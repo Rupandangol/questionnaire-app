@@ -3,20 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\generateQuestionnaireRequest;
-use App\Jobs\TestJob;
-use App\Mail\TestEmail;
-use App\Mail\TestMarkdownMail;
 use App\Models\Question;
 use App\Models\Questionnaire;
 use App\Models\QuestionnaireDetail;
-use App\Models\Student;
 use App\Services\SendEmailService;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
-use PDO;
 
 class QuestionnaireController extends Controller
 {

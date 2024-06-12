@@ -9,6 +9,7 @@ const QuestionnaireForm = () => {
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [completed, setCompleted] = useState(null);
 
   const { id, student_id } = usePage().props;
 
@@ -70,6 +71,7 @@ const QuestionnaireForm = () => {
           title: 'Submitted',
           text: 'Questionnaire submitted successfully!',
         });
+        setCompleted('Submitted Successfully');
         console.log(response.data); // Handle success response
       }
       // Clear selected answers
@@ -87,6 +89,7 @@ const QuestionnaireForm = () => {
   };
 
   if (loading) return <div className='h-screen flex items-center justify-center'>Loading...</div>;
+  if (completed) return <div className='h-screen flex items-center justify-center'>{completed}</div> ;
   if (error) return <div className='h-screen flex items-center justify-center'>Error: {error}</div> ;
 
   return (
