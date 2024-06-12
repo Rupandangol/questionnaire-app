@@ -36,14 +36,15 @@ Follow these steps to set up the project using Laravel Sail:
 
     ```bash
     ./vendor/bin/sail artisan db:seed
-
+7. Build frontend assets:
+    ```bash
+    npm run dev
 ## Usage
 - Ensure the Laravel Sail environment is running:
     ```bash
     ./vendor/bin/sail up
 
 - You can then access the application at http://localhost.
-
 ## Testing
 - To run the tests, use the following command:
 
