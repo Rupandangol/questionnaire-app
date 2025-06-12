@@ -1,81 +1,125 @@
-import QuestionnaireList from '@/Components/QuestionnaireList';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
-import axios from 'axios';
-import { useEffect, useState } from 'react';
-import Swal from 'sweetalert2';
+import QuestionnaireList from "@/Components/QuestionnaireList";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { Head } from "@inertiajs/react";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
+import Echo from "laravel-echo";
+import Pusher from "pusher-js";
 
 export default function Dashboard({ auth }) {
-    const [allQuestionnaire, setAllQuestionnaire]=useState([]);
+    const [allQuestionnaire, setAllQuestionnaire] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
     const [formData, setFormData] = useState({
-        title: '',
-        expiry_date: ''
-      });
+        title: "",
+        expiry_date: "",
+    });
 
-      const handleChange = (e) => {
+    const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prevState => ({
-          ...prevState,
-          [name]: value
+        setFormData((prevState) => ({
+            ...prevState,
+            [name]: value,
         }));
-      };
-    
-      const handleSubmit = async(e) => {
-        e.preventDefault();
-            try {
-                const response = await axios.post('/api/generate-questionnaire', formData);
-                if(response.data.status==='success'){
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: 'Questionnaire generated successfully!',
-                      });
-                    console.log(response.data);
-                    setFormData({
-                        title:'',
-                        expiry_date:''
-                    });
-                    fetchAllQuestionnaire(1);
-                }
-            } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Failed',
-                    text: error,
-                  });
-                console.error('Error:', error);
-            }
-      };
+    };
 
-      const fetchAllQuestionnaire= async(page)=>{
-        try{    
-            const response= await axios.get(`/api/all-questionnaire?page=${page}`);
-            if(response.data.status=='success'){
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.post(
+                "/api/generate-questionnaire",
+                formData
+            );
+            if (response.data.status === "success") {
+                Swal.fire({
+                    icon: "success",
+                    title: "Success",
+                    text: "Questionnaire generated successfully!",
+                });
+                console.log(response.data);
+                setFormData({
+                    title: "",
+                    expiry_date: "",
+                });
+                fetchAllQuestionnaire(1);
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Failed",
+                text: error,
+            });
+            console.error("Error:", error);
+        }
+    };
+
+    const fetchAllQuestionnaire = async (page) => {
+        try {
+            const response = await axios.get(
+                `/api/all-questionnaire?page=${page}`
+            );
+            if (response.data.status == "success") {
                 setAllQuestionnaire(response.data.data.data);
                 setCurrentPage(response.data.data.current_page);
                 setTotalPages(response.data.data.last_page);
             }
             console.log(response.data);
-
-        }catch(error){
-            console.log(error)
+        } catch (error) {
+            console.log(error);
         }
-      }
+    };
 
-      useEffect(()=>{
+    useEffect(() => {
         fetchAllQuestionnaire(currentPage);
-      },[currentPage]);
+        window.Pusher = Pusher;
 
-      const goToPage = (page) => {
+        window.Echo = new Echo({
+            broadcaster: "pusher",
+            key: import.meta.env.VITE_PUSHER_APP_KEY,
+            cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+            forceTLS: true,
+        });
+        window.Echo.channel("Blog").listen("BlogCreatedEvent", (e) => {
+            console.log("asdf");
+        });
+    }, [currentPage]);
+
+    const goToPage = (page) => {
         setCurrentPage(page);
-      };
+    };
+
+    // Echo.channel("Blog").listen("BlogCreatedEvent", (e) => {
+    //     console.log("testtt====>");
+    //     console.log(e.Blog);
+    // });
+    // var channel = Pusher.subscribe('Blog');
+    // channel.bind('BlogCreatedEvent', function(data) {
+    //   alert(JSON.stringify(data));
+    // });
+
+    // window.Pusher = Pusher;
+
+    // window.Echo = new Echo({
+    //     broadcaster: "pusher",
+    //     key: process.env.REACT_APP_PUSHER_APP_KEY,
+    //     cluster: process.env.REACT_APP_PUSHER_APP_CLUSTER,
+    //     forceTLS: true,
+    // });
+
+    window.Echo.channel("Blog").listen("BlogCreatedEvent", (e) => {
+        console.log("asdf");
+    });
+
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Dashboard</h2>}
+            header={
+                <h2 className="font-semibold text-xl text-gray-800 leading-tight">
+                    Dashboard
+                </h2>
+            }
         >
             <Head title="Dashboard" />
 
@@ -84,28 +128,35 @@ export default function Dashboard({ auth }) {
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-10">
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                            <label className="block mb-1">Title:</label>
-                            <input 
-                                type="text" 
-                                name="title" 
-                                value={formData.title} 
-                                onChange={handleChange} 
-                                required 
-                                className="w-full border border-gray-300 rounded-md px-3 py-2"
-                            />
+                                <label className="block mb-1">Title:</label>
+                                <input
+                                    type="text"
+                                    name="title"
+                                    value={formData.title}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                                />
                             </div>
                             <div>
-                            <label className="block mb-1">Expiry Date:</label>
-                            <input 
-                                type="date" 
-                                name="expiry_date" 
-                                value={formData.expiry_date} 
-                                onChange={handleChange} 
-                                required 
-                                className="w-full border border-gray-300 rounded-md px-3 py-2"
-                            />
+                                <label className="block mb-1">
+                                    Expiry Date:
+                                </label>
+                                <input
+                                    type="date"
+                                    name="expiry_date"
+                                    value={formData.expiry_date}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                                />
                             </div>
-                            <button type="submit" className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600">Generate Questionnaire</button>
+                            <button
+                                type="submit"
+                                className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
+                            >
+                                Generate Questionnaire
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -120,7 +171,6 @@ export default function Dashboard({ auth }) {
                     />
                 </div>
             </div>
-            
         </AuthenticatedLayout>
     );
 }
